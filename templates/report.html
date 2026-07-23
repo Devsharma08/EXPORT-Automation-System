@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Report — EXPORT Automation System{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-breadcrumb">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="4" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="20" x2="6" y2="14" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="20" x2="22" y2="20" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Report</span>
+    </div>
+    <h2>Campaign Report</h2>
+    <p>Delivery statistics and outreach history</p>
+  </div>
+  <div class="header-actions">
+    <a href="{{ url_for('download_report') }}" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke-width="2" stroke-linecap="round"/></svg>
+      Download CSV
+    </a>
+  </div>
+</div>
+
+<!-- ── Hero Metrics ─────────────────────────────────────── -->
+<div class="report-hero">
+  <div class="rh-card">
+    <div class="rh-label">Total Recipients</div>
+    <div class="rh-value amber" style="margin-top: var(--s3);" data-target="{{ report.total_recipients }}">{{ report.total_recipients }}</div>
+  </div>
+  <div class="rh-card green">
+    <div class="rh-label">Sent Successfully</div>
+    <div class="rh-value green" style="margin-top: var(--s3);" data-target="{{ report.success_count }}">{{ report.success_count }}</div>
+  </div>
+  <div class="rh-card red">
+    <div class="rh-label">Failed</div>
+    <div class="rh-value red" style="margin-top: var(--s3);" data-target="{{ report.failed_count }}">{{ report.failed_count }}</div>
+  </div>
+  <div class="rh-card">
+    <div class="rh-label">Success Rate</div>
+    <div class="rh-value amber" style="margin-top: var(--s3);">{{ report.success_rate }}%</div>
+  </div>
+</div>
+
+<!-- ── Success Rate Bar ──────────────────────────────────── -->
+<div class="card mb-7" style="margin-bottom: var(--s7);">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 6 23 6 23 12" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Delivery Rate
+    </div>
+    <span class="badge {% if report.success_rate >= 80 %}badge-success{% elif report.success_rate >= 50 %}badge-warning{% else %}badge-error{% endif %}">
+      {{ report.success_rate }}%
+    </span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" data-width="{{ report.success_rate }}" style="width:0%"></div>
+  </div>
+  <div class="d-flex jc-between mt-4" style="margin-top: var(--s3);">
+    <span class="text-muted text-xs">0%</span>
+    <span class="text-muted text-xs">100%</span>
+  </div>
+</div>
+
+<!-- ── Stats Grid ────────────────────────────────────────── -->
+<div class="stats-grid mb-7" style="margin-bottom: var(--s7);">
+
+  <div class="stat-card">
+    <div class="stat-card-inner">
+      <div class="stat-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="stat-value" data-target="{{ report.total_buyers }}">{{ report.total_buyers }}</div>
+      <div class="stat-label">Total Buyers in DB</div>
+    </div>
+  </div>
+
+  <div class="stat-card blue">
+    <div class="stat-card-inner">
+      <div class="stat-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke-width="1.8"/><polyline points="22,6 12,13 2,6" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="stat-value" data-target="{{ report.total_sent }}">{{ report.total_sent }}</div>
+      <div class="stat-label">Lifetime Attempts</div>
+    </div>
+  </div>
+
+  <div class="stat-card green">
+    <div class="stat-card-inner">
+      <div class="stat-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="stat-value" data-target="{{ report.sent_success }}">{{ report.sent_success }}</div>
+      <div class="stat-label">Lifetime Successes</div>
+    </div>
+  </div>
+
+  <div class="stat-card red">
+    <div class="stat-card-inner">
+      <div class="stat-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="1.8"/><line x1="15" y1="9" x2="9" y2="15" stroke-width="1.8" stroke-linecap="round"/><line x1="9" y1="9" x2="15" y2="15" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="stat-value" data-target="{{ report.sent_failed }}">{{ report.sent_failed }}</div>
+      <div class="stat-label">Lifetime Failures</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Send Log Table ────────────────────────────────────── -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="12" x2="21" y2="12" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="18" x2="21" y2="18" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="6" x2="3.01" y2="6" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="12" x2="3.01" y2="12" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="18" x2="3.01" y2="18" stroke-width="2" stroke-linecap="round"/></svg>
+      Send Log
+      <span class="badge badge-neutral" style="margin-left: var(--s2);">Last 20</span>
+    </div>
+    <span class="text-muted text-xs">{{ report.total_sent }} total attempts</span>
+  </div>
+
+  {% if recent_log %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Timestamp</th>
+          <th>Subject</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in recent_log %}
+        <tr>
+          <td class="td-mono td-truncate" title="{{ entry.email }}">{{ entry.email or '—' }}</td>
+          <td>
+            {% if entry.status == 'sent' %}
+              <span class="badge badge-success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                sent
+              </span>
+            {% else %}
+              <span class="badge badge-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18" stroke-width="2.5" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke-width="2.5" stroke-linecap="round"/></svg>
+                failed
+              </span>
+            {% endif %}
+          </td>
+          <td class="td-mono text-muted text-xs">{{ (entry.timestamp or '')[:19].replace('T',' ') or '—' }}</td>
+          <td class="td-truncate text-muted" title="{{ entry.subject }}">{{ entry.subject or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke-width="1.4"/><polyline points="22,6 12,13 2,6" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </div>
+    <div class="empty-title">No emails sent yet</div>
+    <div class="empty-desc">Run a campaign from the Send page to see results here.</div>
+    <a href="{{ url_for('send') }}" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="22" y1="2" x2="11" y2="13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22 2 15 22 11 13 2 9 22 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Send Campaign
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Per-campaign detail -->
+{% if report.successful_emails or report.failed_emails %}
+<div class="grid-2 mt-6" style="margin-top: var(--s6);">
+
+  {% if report.successful_emails %}
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Successful
+      </div>
+      <span class="badge badge-success">{{ report.successful_emails|length }}</span>
+    </div>
+    <div style="max-height:220px; overflow-y:auto;">
+      {% for email in report.successful_emails %}
+      <div class="td-mono text-sm" style="padding: var(--s2) 0; color:var(--green); border-bottom:1px solid var(--border-subtle);">{{ email }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if report.failed_emails %}
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="1.8"/><line x1="15" y1="9" x2="9" y2="15" stroke-width="1.8" stroke-linecap="round"/><line x1="9" y1="9" x2="15" y2="15" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Failed
+      </div>
+      <span class="badge badge-error">{{ report.failed_emails|length }}</span>
+    </div>
+    <div style="max-height:220px; overflow-y:auto;">
+      {% for email in report.failed_emails %}
+      <div class="td-mono text-sm" style="padding: var(--s2) 0; color:var(--red); border-bottom:1px solid var(--border-subtle);">{{ email }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endif %}
+
+<div class="text-right text-xs text-muted mt-5" style="margin-top: var(--s5);">
+  Generated {{ report.generated_at[:19].replace('T',' ') }} UTC
+</div>
+
+{% endblock %}

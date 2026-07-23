@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Upload Leads — EXPORT Automation System{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-breadcrumb">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 8 12 3 7 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Upload Leads</span>
+    </div>
+    <h2>Buyer Database</h2>
+    <p>Import buyer leads via CSV or review existing records</p>
+  </div>
+</div>
+
+<div class="grid-2 mb-7">
+
+  <!-- Upload Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="1.8"/><polyline points="14 2 14 8 20 8" stroke-width="1.8"/><line x1="12" y1="18" x2="12" y2="12" stroke-width="1.8" stroke-linecap="round"/><polyline points="9 15 12 12 15 15" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Upload CSV File
+      </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      <div id="upload-zone" class="upload-zone">
+        <input type="file" name="file" id="file-input" accept=".csv" required />
+        <div class="upload-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 16 12 12 8 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="12" x2="12" y2="21" stroke-width="1.5" stroke-linecap="round"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="upload-title">Drop CSV file here or click to browse</div>
+        <div class="upload-subtitle">Accepts .csv files with buyer records</div>
+      </div>
+
+      <div class="info-box blue mt-5" style="margin-top: var(--s5);">
+        <strong>Expected columns (flexible matching):</strong><br/>
+        <code style="font-family:var(--mono); font-size:11px; opacity:0.85;">buyer_name · company_name · email · website · country · source_platform</code>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full mt-5" style="margin-top: var(--s5);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 8 12 3 7 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke-width="2" stroke-linecap="round"/></svg>
+        Upload &amp; Import
+      </button>
+    </form>
+  </div>
+
+  <!-- Stats Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="4" stroke-width="1.8" stroke-linecap="round"/><line x1="6" y1="20" x2="6" y2="14" stroke-width="1.8" stroke-linecap="round"/><line x1="2" y1="20" x2="22" y2="20" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Database Statistics
+      </div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns: 1fr 1fr; gap: var(--s4); margin-bottom: var(--s6);">
+      <div class="stat-card" style="padding: var(--s5);">
+        <div class="stat-card-inner">
+          <div class="stat-value" style="font-size:28px;" data-target="{{ stats.total_buyers }}">{{ stats.total_buyers }}</div>
+          <div class="stat-label">Total Buyers</div>
+        </div>
+      </div>
+      <div class="stat-card blue" style="padding: var(--s5);">
+        <div class="stat-card-inner">
+          <div class="stat-value" style="font-size:28px;" data-target="{{ stats.total_sent }}">{{ stats.total_sent }}</div>
+          <div class="stat-label">Emails Sent</div>
+        </div>
+      </div>
+      <div class="stat-card purple" style="padding: var(--s5);">
+        <div class="stat-card-inner">
+          <div class="stat-value" style="font-size:28px;" data-target="{{ stats.business_emails }}">{{ stats.business_emails }}</div>
+          <div class="stat-label">Business</div>
+        </div>
+      </div>
+      <div class="stat-card green" style="padding: var(--s5);">
+        <div class="stat-card-inner">
+          <div class="stat-value" style="font-size:28px;" data-target="{{ stats.individual_emails }}">{{ stats.individual_emails }}</div>
+          <div class="stat-label">Individual</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div style="display:flex; flex-direction:column; gap: var(--s3); font-size:12px; color:var(--text-muted); font-family:var(--mono);">
+      <div class="d-flex jc-between">
+        <span>buyers.csv</span>
+        <span>{{ stats.buyers_csv_size }} KB</span>
+      </div>
+      <div class="d-flex jc-between">
+        <span>sent_log.csv</span>
+        <span>{{ stats.sent_log_size }} KB</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Buyers Table -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="12" x2="21" y2="12" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="18" x2="21" y2="18" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="6" x2="3.01" y2="6" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="12" x2="3.01" y2="12" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="18" x2="3.01" y2="18" stroke-width="2" stroke-linecap="round"/></svg>
+      Recent Buyers
+      <span class="badge badge-neutral" style="margin-left: var(--s2);">Last 10</span>
+    </div>
+    <a href="{{ url_for('classify') }}" class="btn btn-secondary btn-sm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3" stroke-width="2"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke-width="2" stroke-linecap="round"/></svg>
+      Run Classification
+    </a>
+  </div>
+
+  {% if recent_buyers %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Buyer Name</th>
+          <th>Company</th>
+          <th>Country</th>
+          <th>Source</th>
+          <th>Discovered</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for buyer in recent_buyers %}
+        <tr>
+          <td class="td-mono td-truncate" title="{{ buyer.email }}">{{ buyer.email or '—' }}</td>
+          <td>{{ buyer.buyer_name or '—' }}</td>
+          <td class="td-truncate" title="{{ buyer.company_name }}">{{ buyer.company_name or '—' }}</td>
+          <td>{{ buyer.country or '—' }}</td>
+          <td><span class="badge badge-info">{{ buyer.source_platform or 'Unknown' }}</span></td>
+          <td class="td-mono text-muted text-xs">{{ (buyer.discovered_at or '')[:10] or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="1.4"/><circle cx="9" cy="7" r="4" stroke-width="1.4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="empty-title">No buyer records yet</div>
+    <div class="empty-desc">Upload a CSV above or run the buyer search from the Dashboard to populate this table.</div>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
