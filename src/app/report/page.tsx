@@ -4,6 +4,9 @@ import { buildRunReport } from '@/lib/reports/reportGenerator';
 import { readSentLog } from '@/lib/data/activityLogger';
 import type { SentLogRecord } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
+
 export const metadata: Metadata = { title: 'Report — EXPORT Automation System' };
 
 function statusBadge(status: string) {

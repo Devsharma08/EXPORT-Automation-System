@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { getDatabaseStats } from '@/lib/data/activityLogger';
 import { loadSettings } from '@/lib/data/settingsHelper';
 import { getAttachmentInfo } from '@/lib/outreach/attachmentHandler';
+import DashboardSearchClient from '@/components/DashboardSearchClient';
+
+export const dynamic = 'force-dynamic';
+
 
 export const metadata: Metadata = { title: 'Dashboard — EXPORT Automation System' };
 
@@ -88,20 +92,7 @@ export default function Dashboard() {
           </div>
 
           {/* Quick search trigger */}
-          <form action="/api/search" method="POST" style={{ marginTop: 16 }}>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                name="keyword"
-                defaultValue="Singing Bowls"
-                className="form-input"
-                placeholder="Search keyword…"
-              />
-              <button type="submit" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8" strokeWidth="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth="2" strokeLinecap="round"/></svg>
-                Search
-              </button>
-            </div>
-          </form>
+          <DashboardSearchClient />
         </div>
 
         {/* System Health */}

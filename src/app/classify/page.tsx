@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { readClassifiedEmails } from '@/lib/data/activityLogger';
 import ClassifyClient from '@/components/ClassifyClient';
 
+export const dynamic = 'force-dynamic';
+
+
 export const metadata: Metadata = { title: 'AI Classify — EXPORT Automation System' };
 
 export default function ClassifyPage() {

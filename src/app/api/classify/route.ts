@@ -3,6 +3,9 @@ import { readBuyers, saveClassifiedEmails, readClassifiedEmails } from '@/lib/da
 import { loadSettings } from '@/lib/data/settingsHelper';
 import { classifyWithGemini } from '@/lib/ai/geminiClassifier';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET() {
   try {
     const bizEmails = readClassifiedEmails('business');

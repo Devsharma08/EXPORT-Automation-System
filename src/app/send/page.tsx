@@ -4,6 +4,9 @@ import { getAttachmentInfo } from '@/lib/outreach/attachmentHandler';
 import { readClassifiedEmails } from '@/lib/data/activityLogger';
 import SendClient from '@/components/SendClient';
 
+export const dynamic = 'force-dynamic';
+
+
 export const metadata: Metadata = { title: 'Send Campaign — EXPORT Automation System' };
 
 export default function SendPage() {

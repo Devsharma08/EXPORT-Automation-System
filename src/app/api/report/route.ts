@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { buildRunReport } from '@/lib/reports/reportGenerator';
 import { readSentLog } from '@/lib/data/activityLogger';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET() {
   try {
     const report = buildRunReport(null);
