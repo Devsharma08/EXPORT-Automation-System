@@ -1,0 +1,138 @@
+# EXPORT Automation System: Architecture Overview
+
+The application was migrated from a traditional **Python (Flask) + Jinja2 HTML** setup into a modern **Next.js (TypeScript)** application using the **App Router**. 
+
+In Next.js, the "backend" and "frontend" live in the exact same codebase, tightly integrated. Here is a file-by-file breakdown of what everything does and how it works.
+
+---
+
+## 1. The Backend Core (`src/lib/`)
+This is where the actual business logic (scraping, AI, sending emails, saving to database) lives. It replaces all the loose Python files.
+
+### Configuration & Data
+*   `src/lib/config.ts`: The central nervous system. It reads your `.env` file (like your Gmail credentials and API key) and defines constants like file paths and the CSV column names.
+*   `src/lib/data/activityLogger.ts`: Replaces Python's `pandas`. This file handles all reading and writing to your CSV files (`buyers.csv`, `sent_log.csv`, etc.) using standard Node.js `fs` (file system) and the `csv-parse` library.
+*   `src/lib/data/settingsHelper.ts`: Reads and writes your configuration (like default email subjects and limits) to `data/settings.json`.
+
+### Business Logic
+*   `src/lib/search/*.ts`: (Google, Facebook, LinkedIn, etc.) These are the web scrapers. They use `fetch` to get the raw HTML from search engines and `cheerio` (the JavaScript equivalent of BeautifulSoup) to extract text and find emails using regular expressions.
+*   `src/lib/ai/geminiClassifier.ts`: Connects to Google's `@google/generative-ai` SDK. It takes your list of emails, asks Gemini to categorize them as "business" or "individual", and parses the response.
+*   `src/lib/outreach/gmailSender.ts`: Replaces Python's `smtplib`. It uses the popular `nodemailer` library to establish a secure SSL connection to `smtp.gmail.com` on port 465, attaches your PDF, and sends the personalized emails with your configured delays.
+*   `src/lib/validation/emailValidator.ts`: Checks emails against a blocklist of temporary/disposable domains and ensures they follow a valid format.
+
+---
+
+## 2. The Backend API Routes (`src/app/api/`)
+These files replace your old Flask `@app.route(...)` functions. They act as the bridge between your web interface and the backend logic in `src/lib/`.
+
+*   `api/search/route.ts`: Starts the web scraping process. Because scraping takes time, it spins up the scrapers in the background (`setImmediate`) so the frontend doesn't freeze.
+*   `api/search/status/route.ts`: The frontend continuously pings this route to get the live terminal logs of the search progress.
+*   `api/classify/route.ts`: Reads the `buyers.csv`, sends it to the Gemini classifier, and saves the results to `business_emails.csv` and `individual_emails.csv`.
+*   `api/send/route.ts`: The most critical route. It reads the classified emails, filters out anyone already in `sent_log.csv` (anti-spam protection), and triggers the `gmailSender`.
+*   `api/buyers/upload/route.ts`: Receives the CSV file you upload on the frontend, maps the columns dynamically, and appends the new contacts to your database.
+*   `api/report/download/route.ts`: Generates a downloadable CSV file on the fly based on your campaign results.
+
+---
+
+## 3. The Frontend Pages (`src/app/`)
+These are **Server Components**. They run on the server, fetch data from the CSVs directly, and generate the HTML to send to your browser.
+
+*   `layout.tsx` & `globals.css`: The master wrapper for your app. It contains the Sidebar navigation and the premium dark-themed CSS variables used across the entire site.
+*   `page.tsx` (Dashboard): Reads the database stats and renders the summary cards and the pipeline progress graphic.
+*   `upload/page.tsx`: Shows the database preview and the upload zone.
+*   `classify/page.tsx`: Shows how many emails are waiting to be classified.
+*   `send/page.tsx`: Shows the email composer and campaign limits.
+*   `settings/page.tsx`: Reads `settings.json` and renders the configuration form.
+
+> [!NOTE]
+> All of these pages include `export const dynamic = 'force-dynamic';`. This tells Next.js **not** to cache the page, ensuring that the HTML always reflects the live, up-to-the-second data in your CSV files.
+
+---
+
+## 4. The Frontend Client Components (`src/components/`)
+Because Server Components (the pages above) cannot have interactive elements (like `onClick` handlers or `useState`), interactive parts of the UI are broken out into Client Components (marked with `'use client'`).
+
+*   `DashboardSearchClient.tsx`: The search bar on the Dashboard. When you submit a keyword, it takes over, shows a "Searching..." spinner, and starts polling the `api/search/status` route to draw the live log terminal.
+*   `UploadClient.tsx`: Handles dragging and dropping a CSV file. It converts the file into a `FormData` object and POSTs it to the upload API.
+*   `ClassifyClient.tsx` & `SendClient.tsx`: These handle the buttons that trigger the heavy backend tasks. They manage the loading spinners and display success/error flash messages depending on what the API responds with.
+*   `FlashMessages.tsx`: A simple UI component that renders the green (success) or red (error) alert boxes dynamically based on the state of the parent components.
+
+
+
+
+
+
+
+
+
+
+
+==================================
+
+
+
+
+
+
+
+
+
+
+Edited route.ts
+Edited page.tsx
+Edited explain.txt
+Viewed explain.txt:1-15
+
+Here is the complete, step-by-step chronological workflow of how data travels through the application from the moment a user starts, up to the moment an email lands in a buyer's inbox!
+
+---
+
+### Step 1: Data Ingestion (Finding the Leads)
+The workflow always begins by getting emails into the system's "raw" database (`data/buyers.csv`). There are two ways the user can do this:
+
+**Option A: The Automated Scraper**
+1. The user goes to the **Dashboard** (`src/app/page.tsx`) and types a keyword (e.g., "Singing Bowls") into the search bar (`src/components/DashboardSearchClient.tsx`).
+2. The UI sends a POST request to the Next.js API at `src/app/api/search/route.ts`.
+3. The API spins up a background task that calls the scraper engines located in `src/lib/search/`.
+4. These scrapers use JavaScript's `fetch` to load Google/LinkedIn search pages, and `cheerio` to extract any email addresses found in the raw HTML text.
+5. The extracted leads are passed to `src/lib/data/activityLogger.ts`, which safely writes them to `data/buyers.csv` on your hard drive.
+
+**Option B: Manual CSV Upload** *(The method you are using)*
+1. The user goes to the **Upload Page** (`src/app/upload/page.tsx`) and drops a CSV file into the drag-and-drop zone (`src/components/UploadClient.tsx`).
+2. The UI sends the file as a `FormData` POST request to `src/app/api/buyers/upload/route.ts`.
+3. The API reads the file, standardizes the columns, and calls `src/lib/data/activityLogger.ts` to append the rows directly into `data/buyers.csv`.
+
+---
+
+### Step 2: AI Classification (Sorting the Leads)
+Now that `data/buyers.csv` is full of raw emails, the system needs to figure out who is a B2B Company vs. a B2C Individual.
+
+1. The user goes to the **AI Classify Page** (`src/app/classify/page.tsx`) and clicks the "Run Classification" button (`src/components/ClassifyClient.tsx`).
+2. A POST request is sent to `src/app/api/classify/route.ts`.
+3. This API route reads all the raw emails using `activityLogger.ts` and passes them to the AI handler: `src/lib/ai/geminiClassifier.ts`.
+4. The AI handler takes your `GEMINI_API_KEY` (loaded from `src/lib/config.ts`), constructs a prompt containing the emails, and makes a network request to Google's Gemini LLM.
+5. Gemini returns a JSON object sorting the emails.
+6. The API route receives this JSON and tells `activityLogger.ts` to save the results into two new databases: `data/business_emails.csv` and `data/individual_emails.csv`.
+
+---
+
+### Step 3: Campaign Dispatch (Sending the Emails)
+Now the user is ready to send the emails to the classified leads.
+
+1. The user goes to the **Send Campaign Page** (`src/app/send/page.tsx`), writes a subject line and body, and clicks "Launch Campaign" in `src/components/SendClient.tsx`.
+2. A POST request containing the email body and chosen audience ("business", "individual", or "all") is sent to `src/app/api/send/route.ts`.
+3. **Spam Protection:** First, the API reads the list of emails you've chosen. Then it uses `activityLogger.ts` to read `data/sent_log.csv`. Any email that already exists in the `sent_log` is immediately filtered out so nobody gets spammed twice.
+4. **The SMTP Engine:** The filtered list is passed to `src/lib/outreach/gmailSender.ts`.
+5. This sender uses the `nodemailer` library. It logs into your Gmail account over a secure SSL connection (Port 465) using the credentials defined in `src/lib/data/settingsHelper.ts`.
+6. It loops through each email, replaces the `{name}` placeholders, attaches your PDF presentation (`assets/company_presentation.pdf`), and fires it off to Google's SMTP server. 
+7. It pauses briefly based on your `send_delay` setting to avoid Gmail rate-limits.
+
+---
+
+### Step 4: Activity Logging & Reporting (The Final State)
+As the emails are successfully sent (or fail), the system records the outcome.
+
+1. For every email processed by the `gmailSender`, it returns a status of "success" or "failed".
+2. `src/app/api/send/route.ts` takes these results and passes them to `logCampaignResults()` inside `src/lib/data/activityLogger.ts`.
+3. `activityLogger.ts` writes a new row to `data/sent_log.csv` for every email, recording the timestamp, the email address, and whether it succeeded or failed.
+4. Finally, when the user visits the **Report Page** (`src/app/report/page.tsx`), it reads this `sent_log.csv` to show the final statistics of the campaign.

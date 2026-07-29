@@ -111,11 +111,50 @@ export async function sendCampaign({
       recipient.company_name ?? ''
     );
 
+    const unsubscribeEmail = `unsubscribe@${gmailEmail.split('@')[1] || 'yourdomain.com'}`;
+    const physicalAddress = '123 Export Business Rd, Suite 100, Business City, Country 12345';
+    
+    const textBody = `${personalizedBody}
+
+---
+If you no longer wish to receive these emails, please reply to this email with "Unsubscribe".
+${physicalAddress}
+`;
+
+    const htmlBody = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333333;">
+  <div>
+    ${personalizedBody.replace(/\n/g, '<br>')}
+  </div>
+  <br><br>
+  <hr style="border: none; border-top: 1px solid #eeeeee;">
+  <div style="font-size: 11px; color: #888888; text-align: left; margin-top: 15px;">
+    <p>You are receiving this email because we identified you as a potential partner in the industry.</p>
+    <p>${physicalAddress}</p>
+    <p><a href="mailto:${gmailEmail}?subject=Unsubscribe" style="color: #888888; text-decoration: underline;">Unsubscribe from our mailing list</a></p>
+  </div>
+</body>
+</html>`;
+
+    const messageId = `<${Date.now()}-${Math.random().toString(36).substring(2, 10)}@${gmailEmail.split('@')[1] || 'gmail.com'}>`;
+
     const mailOptions: Mail.Options = {
-      from: gmailEmail,
+      from: `"Export Team" <${gmailEmail}>`,
+      replyTo: gmailEmail,
       to: receiverEmail,
       subject,
-      text: personalizedBody,
+      text: textBody,
+      html: htmlBody,
+      messageId: messageId,
+      headers: {
+        'X-Mailer': 'Nodemailer',
+        'X-Priority': '3 (Normal)',
+        'List-Unsubscribe': `<mailto:${gmailEmail}?subject=Unsubscribe>`,
+      },
       ...(ccEmail ? { cc: ccEmail } : {}),
       ...(attachment ? { attachments: [attachment] } : {}),
     };

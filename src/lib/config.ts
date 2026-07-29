@@ -50,6 +50,9 @@ export const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? '';
 export const GEMINI_MODEL = 'gemini-1.5-flash';
 export const CLASSIFICATION_BATCH_SIZE = 20;
 
+// ── Scraping Settings ──────────────────────────────────────────────────────────
+export const SCRAPINGBEE_API_KEY = process.env.SCRAPINGBEE_API_KEY ?? '';
+
 // ── Allowed Attachment Extensions ─────────────────────────────────────────────
 export const ALLOWED_ATTACHMENT_EXTENSIONS = new Set(['.pdf', '.pptx', '.ppt', '.docx', '.doc']);
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { appendBuyers } from '@/lib/data/activityLogger';
+import { appendBuyers, clearBuyers } from '@/lib/data/activityLogger';
 import { extract } from '@/lib/extraction/dataExtractor';
 import { validateRecords } from '@/lib/validation/emailValidator';
 
@@ -12,12 +12,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'A search is already running. Please wait.' }, { status: 409 });
   }
 
-  const body = await request.json().catch(() => ({})) as { keyword?: string };
+  const body = await request.json().catch(() => ({})) as { keyword?: string; platforms?: string[]; maxResults?: number };
   const keyword = (body.keyword ?? 'Singing Bowls').trim();
+  const selectedPlatforms = body.platforms ?? ['Google', 'Facebook', 'LinkedIn', 'Directory', 'Website'];
+  const maxResults = body.maxResults ?? 20;
 
   // Run asynchronously in the background (non-blocking)
   searchRunning = true;
   searchLog = [];
+  
+  // Clear previous search records as requested by user
+  clearBuyers();
 
   setImmediate(async () => {
     const { search: googleSearch } = await import('@/lib/search/googleSearch');
@@ -26,7 +31,7 @@ export async function POST(request: NextRequest) {
     const { search: directorySearch } = await import('@/lib/search/directorySearch');
     const { search: websiteSearch } = await import('@/lib/search/websiteSearch');
 
-    const adapters: [string, (keyword: string) => Promise<unknown[]>][] = [
+    const allAdapters: [string, (keyword: string, maxResults?: number) => Promise<unknown[]>][] = [
       ['Google', googleSearch],
       ['Facebook', facebookSearch],
       ['LinkedIn', linkedinSearch],
@@ -34,10 +39,12 @@ export async function POST(request: NextRequest) {
       ['Website', websiteSearch],
     ];
 
+    const adapters = allAdapters.filter(([name]) => selectedPlatforms.includes(name));
+
     const allRaw: unknown[] = [];
     for (const [name, adapter] of adapters) {
       try {
-        const records = await adapter(keyword);
+        const records = await adapter(keyword, maxResults);
         allRaw.push(...records);
         searchLog.push(`✓ ${name}: ${records.length} records`);
       } catch (err) {

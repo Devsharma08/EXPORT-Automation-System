@@ -55,9 +55,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Filter already-sent
-    const sentSet = await getSentEmails();
-    const newEmails = audienceEmails.filter((e) => !sentSet.has(e));
+    // Filter already-sent (DISABLED per user request to allow re-sending)
+    const newEmails = audienceEmails;
 
     if (!newEmails.length) {
       return NextResponse.json({

@@ -64,6 +64,14 @@ function fileSizeKb(filePath: string): number {
 
 // ── Buyers CSV ─────────────────────────────────────────────────────────────────
 
+export function clearBuyers(): void {
+  try {
+    fs.writeFileSync(BUYERS_CSV, BUYERS_COLUMNS.join(',') + '\n', 'utf-8');
+  } catch {
+    // ignore
+  }
+}
+
 export function readBuyers(): BuyerRecord[] {
   return readCsv<BuyerRecord>(BUYERS_CSV, BUYERS_COLUMNS);
 }
