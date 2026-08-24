@@ -114,14 +114,15 @@ export async function sendCampaign({
     const unsubscribeEmail = `unsubscribe@${gmailEmail.split('@')[1] || 'yourdomain.com'}`;
     const physicalAddress = '123 Export Business Rd, Suite 100, Business City, Country 12345';
     
-    const textBody = `${personalizedBody}
+    const isHtmlBody = body.trim().startsWith('<') || body.includes('</div>') || body.includes('</td>');
 
----
-If you no longer wish to receive these emails, please reply to this email with "Unsubscribe".
-${physicalAddress}
-`;
+    const textBody = isHtmlBody
+      ? `${body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}\n\nReply "Unsubscribe" to stop receiving.`
+      : `${personalizedBody}\n\n---\nIf you no longer wish to receive these emails, please reply with "Unsubscribe".\n${physicalAddress}`;
 
-    const htmlBody = `<!DOCTYPE html>
+    const htmlBody = isHtmlBody
+      ? body
+      : `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
