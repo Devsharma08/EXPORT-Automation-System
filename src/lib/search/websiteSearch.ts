@@ -1,12 +1,14 @@
 import { SEARCH_KEYWORD, MAX_RESULTS_PER_SOURCE, BLOCKLISTED_DOMAINS } from '@/lib/config';
 import type { BuyerRecord } from '@/types';
 import { fetchWithScrapingBee, searchGoogleApi } from '@/lib/search/scrapingBee';
+import { unobfuscateEmailText, decodeHtmlEntities, decodeCloudflareEmail } from '@/lib/extraction/dataExtractor';
 
 const EMAIL_PATTERN = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
 
 const WEBSITE_QUERIES = [
   '"{keyword}" importer wholesale "contact us" email',
   '"{keyword}" import company "info@" OR "sales@"',
+  '"{keyword}" distributor "email us" contact',
 ];
 
 function isBlocked(url: string): boolean {
@@ -17,19 +19,39 @@ function isBlocked(url: string): boolean {
 }
 
 async function visitContactPage(baseUrl: string): Promise<string[]> {
-  const contactPaths = ['/contact', '/contact-us', '/'];
+  const contactPaths = ['/contact', '/contact-us', '/about-us', '/about', '/impressum', '/'];
+  const foundEmails = new Set<string>();
+
   for (const p of contactPaths) {
     try {
       const url = new URL(p, baseUrl).toString();
       const resp = await fetchWithScrapingBee(url, false, 8000);
+      if (!resp.ok) continue;
+
       const html = await resp.text();
-      const emails = html.match(EMAIL_PATTERN) ?? [];
-      if (emails.length) return emails.map((e) => e.toLowerCase());
+      const decodedHtml = decodeHtmlEntities(html);
+      const text = unobfuscateEmailText(decodedHtml);
+
+      const matches = text.match(EMAIL_PATTERN) ?? [];
+      for (const m of matches) {
+        foundEmails.add(m.toLowerCase());
+      }
+
+      // Check Cloudflare email protection data-cfemail
+      const cfMatches = html.matchAll(/data-cfemail=["']([a-f0-9]+)["']/gi);
+      for (const cf of cfMatches) {
+        const decoded = decodeCloudflareEmail(cf[1]);
+        if (decoded && decoded.includes('@')) {
+          foundEmails.add(decoded.toLowerCase());
+        }
+      }
+
+      if (foundEmails.size > 0) return Array.from(foundEmails);
     } catch {
       // try next path
     }
   }
-  return [];
+  return Array.from(foundEmails);
 }
 
 export async function search(
@@ -53,8 +75,10 @@ export async function search(
       if (!href || !href.startsWith('http') || isBlocked(href) || seenUrls.has(href)) continue;
       seenUrls.add(href);
 
-      // First check snippet for emails
-      const snippetEmails = (snippet.match(EMAIL_PATTERN) ?? []).map((e) => e.toLowerCase());
+      // Check snippet first
+      const snippetText = unobfuscateEmailText(decodeHtmlEntities(snippet));
+      const snippetEmails = (snippetText.match(EMAIL_PATTERN) ?? []).map((e) => e.toLowerCase());
+      
       if (snippetEmails.length) {
         results.push({
           buyer_name: title,
@@ -68,7 +92,7 @@ export async function search(
         continue;
       }
 
-      // Otherwise, visit the site
+      // Otherwise visit site contact pages
       const p = visitContactPage(href).then((emails) => {
         if (emails.length) {
           results.push({

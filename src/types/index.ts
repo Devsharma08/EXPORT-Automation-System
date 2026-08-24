@@ -54,6 +54,9 @@ export interface AppSettings {
   app_password: string;
   cc_email: string;
   gemini_api_key: string;
+  serper_api_key?: string;
+  scrapingbee_api_key?: string;
+  tavily_api_key?: string;
   default_subject: string;
   default_body: string;
   send_delay: number;

@@ -34,7 +34,7 @@ export default function SettingsClient({ settings: initial, attachment }: Props)
       });
       const data = await res.json() as { message?: string; error?: string };
       if (res.ok) {
-        setMessages([{ category: 'success', message: data.message ?? 'Settings saved!' }]);
+        setMessages([{ category: 'success', message: data.message ?? 'Settings saved successfully!' }]);
       } else {
         setMessages([{ category: 'error', message: data.error ?? 'Failed to save settings.' }]);
       }
@@ -45,7 +45,7 @@ export default function SettingsClient({ settings: initial, attachment }: Props)
     }
   }
 
-  const field = (label: string, id: keyof AppSettings, type = 'text', hint?: string) => (
+  const field = (label: string, id: keyof AppSettings, type = 'text', hint?: React.ReactNode) => (
     <div className="form-group">
       <label className="form-label" htmlFor={String(id)}>{label}</label>
       <input
@@ -56,7 +56,7 @@ export default function SettingsClient({ settings: initial, attachment }: Props)
         onChange={update(id)}
         autoComplete="off"
       />
-      {hint && <p className="form-hint">{hint}</p>}
+      {hint && <div className="form-hint" style={{ marginTop: 4 }}>{hint}</div>}
     </div>
   );
 
@@ -64,32 +64,47 @@ export default function SettingsClient({ settings: initial, attachment }: Props)
     <>
       <div className="page-header">
         <div className="breadcrumb"><span>System</span> / Settings</div>
-        <h2>Settings</h2>
-        <p>Configure Gmail credentials, Gemini API key, and campaign defaults</p>
+        <h2>System Settings & Provider APIs</h2>
+        <p>Configure search providers, AI classification, Gmail SMTP credentials, and campaign defaults</p>
       </div>
 
       <FlashMessages messages={messages} />
 
       <form onSubmit={handleSave}>
         <div className="grid-2">
-          {/* Gmail Settings */}
+          {/* Search Providers & Free API Services */}
           <div className="card">
             <div className="card-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              Gmail SMTP
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Search & Scraping Providers
             </div>
-            {field('Gmail Email', 'email', 'email')}
-            {field('App Password', 'app_password', 'password', '16-character App Password from Google Account Security')}
-            {field('CC Email (monitoring)', 'cc_email', 'email')}
+            
+            <div style={{ padding: '10px 12px', background: 'rgba(59, 130, 246, 0.08)', borderRadius: 6, marginBottom: 14, fontSize: '0.82rem', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+              <strong>✨ Native Free Scraper Active:</strong> If no API keys are entered below, the app uses its built-in free DuckDuckGo & website crawler (**0 API key required**).
+            </div>
+
+            {field('Serper.dev API Key (Recommended)', 'serper_api_key', 'password', 
+              <span>Get <strong>2,500 free queries</strong> at <a href="https://serper.dev" target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>serper.dev</a></span>
+            )}
+
+            {field('ScrapingBee API Key', 'scrapingbee_api_key', 'password',
+              <span>Get <strong>1,000 free credits</strong> at <a href="https://scrapingbee.com" target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>scrapingbee.com</a></span>
+            )}
+
+            {field('Tavily AI Search Key', 'tavily_api_key', 'password',
+              <span>Get <strong>1,000 free queries/mo</strong> at <a href="https://tavily.com" target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>tavily.com</a></span>
+            )}
           </div>
 
           {/* AI Settings */}
           <div className="card">
             <div className="card-title">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="1.8"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/><circle cx="12" cy="12" r="3" fill="var(--blue)" stroke="none"/></svg>
-              Gemini AI
+              Gemini AI Classification
             </div>
-            {field('Gemini API Key', 'gemini_api_key', 'password', 'Get from https://aistudio.google.com/app/apikey')}
+            {field('Gemini API Key', 'gemini_api_key', 'password',
+              <span>Free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Google AI Studio</a></span>
+            )}
             <div className="form-group">
               <label className="form-label" htmlFor="classification_preference">Classification Preference</label>
               <select id="classification_preference" className="form-select" value={form.classification_preference} onChange={update('classification_preference')}>
@@ -98,6 +113,17 @@ export default function SettingsClient({ settings: initial, attachment }: Props)
                 <option value="individual">Individual Only</option>
               </select>
             </div>
+          </div>
+
+          {/* Gmail Settings */}
+          <div className="card">
+            <div className="card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Gmail SMTP Credentials
+            </div>
+            {field('Gmail Email', 'email', 'email')}
+            {field('App Password', 'app_password', 'password', '16-character App Password from Google Account Security')}
+            {field('CC Email (monitoring)', 'cc_email', 'email')}
           </div>
 
           {/* Campaign Defaults */}

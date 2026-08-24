@@ -1,11 +1,11 @@
 /**
- * emailValidator.ts — Regex-based email validation.
- * Port of validation/email_validator.py
+ * emailValidator.ts — Regex & rules-based email validation.
+ * Filters false positives, static assets, disposable emails, and placeholder emails.
  */
 
 import type { BuyerRecord, ValidationResult } from '@/types';
 
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,24}$/;
 
 const DISPOSABLE_DOMAINS = new Set([
   'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwam.com',
@@ -16,14 +16,18 @@ const DISPOSABLE_DOMAINS = new Set([
 ]);
 
 const PLACEHOLDER_PATTERN =
-  /(example|test|noreply|no-reply|donotreply|do-not-reply|info@example|user@domain|email@email|sample|placeholder|dummy|fake|admin@localhost)/i;
+  /(example|test|noreply|no-reply|donotreply|do-not-reply|info@example|user@domain|email@email|sample|placeholder|dummy|fake|admin@localhost|yourname@|someone@|name@domain)/i;
 
-const IMAGE_EXTENSIONS = new Set([
-  'png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'webp', 'ico', 'tiff',
+const ASSET_EXTENSIONS = new Set([
+  'png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'webp', 'ico', 'tiff', 'css', 'js', 'woff', 'woff2', 'ttf', 'eot', 'mp4', 'mp3', 'zip', 'rar', 'pdf'
 ]);
 
 function isValidSyntax(email: string): boolean {
-  return EMAIL_REGEX.test(email);
+  if (!EMAIL_REGEX.test(email)) return false;
+  // Check if TLD ends with digits (e.g., package versions bootstrap@5.3)
+  const tld = email.split('.').pop() ?? '';
+  if (/^\d+$/.test(tld)) return false;
+  return true;
 }
 
 function isDisposable(email: string): boolean {
@@ -35,9 +39,17 @@ function isPlaceholder(email: string): boolean {
   return PLACEHOLDER_PATTERN.test(email);
 }
 
-function isImageExtension(email: string): boolean {
+function isAssetFalsePositive(email: string): boolean {
   const local = email.split('@')[0].toLowerCase();
-  return IMAGE_EXTENSIONS.has(local.split('.').pop() ?? '');
+  const domain = email.split('@')[1]?.toLowerCase() ?? '';
+  const localExt = local.split('.').pop() ?? '';
+  const domainExt = domain.split('.').pop() ?? '';
+
+  if (ASSET_EXTENSIONS.has(localExt) || ASSET_EXTENSIONS.has(domainExt)) {
+    // Exception for pdf if domain is legitimate email provider, but otherwise flag asset strings
+    if (ASSET_EXTENSIONS.has(localExt) && localExt !== 'pdf') return true;
+  }
+  return false;
 }
 
 function isDomainTooLong(email: string): boolean {
@@ -47,8 +59,8 @@ function isDomainTooLong(email: string): boolean {
 export function validateEmail(email: string): { valid: boolean; reason: string } {
   if (!email || typeof email !== 'string') return { valid: false, reason: 'Empty or non-string email' };
   const e = email.trim().toLowerCase();
-  if (!isValidSyntax(e)) return { valid: false, reason: `Invalid syntax: ${e}` };
-  if (isImageExtension(e)) return { valid: false, reason: `Image extension false-positive: ${e}` };
+  if (!isValidSyntax(e)) return { valid: false, reason: `Invalid syntax or version string: ${e}` };
+  if (isAssetFalsePositive(e)) return { valid: false, reason: `Asset filename false-positive: ${e}` };
   if (isDomainTooLong(e)) return { valid: false, reason: `Domain too long: ${e}` };
   if (isDisposable(e)) return { valid: false, reason: `Disposable domain: ${e}` };
   if (isPlaceholder(e)) return { valid: false, reason: `Placeholder email: ${e}` };
