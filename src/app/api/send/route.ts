@@ -42,25 +42,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Gmail credentials not configured.' }, { status: 400 });
     }
 
-    // Get recipients
-    let audienceEmails = readClassifiedEmails(audience);
-    if (!audienceEmails.length) {
-      const buyers = readBuyers();
-      audienceEmails = buyers.map((r) => r.email).filter(Boolean);
-    }
+    // Get recipients directly from discovered buyers (bypassing AI classification)
+    const buyers = readBuyers();
+    const audienceEmails = buyers.map((r) => r.email).filter(Boolean);
 
     if (!audienceEmails.length) {
       return NextResponse.json({
-        error: 'No recipients found. Upload buyers and run classification first.',
+        error: 'No discovered buyer emails found in database.',
       }, { status: 400 });
     }
 
-    // Filter already-sent (DISABLED per user request to allow re-sending)
-    const newEmails = audienceEmails;
+    // Filter already-sent emails to keep a clean record and avoid duplicates
+    const sentEmails = getSentEmails();
+    const newEmails = audienceEmails.filter(email => !sentEmails.has(email.toLowerCase()));
 
     if (!newEmails.length) {
       return NextResponse.json({
-        error: 'All recipients in the selected audience have already been contacted.',
+        error: 'All discovered buyers have already been sent outreach emails.',
       }, { status: 400 });
     }
 

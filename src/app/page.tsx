@@ -17,7 +17,6 @@ export default function Dashboard() {
 
   const healthChecks = [
     { label: 'Gmail Credentials', ok: !!(settings.email && settings.app_password) },
-    { label: 'Gemini API Key', ok: !!settings.gemini_api_key },
     { label: 'Presentation File', ok: attachment.exists },
     { label: 'Buyers Database', ok: stats.total_buyers > 0 },
   ];
@@ -29,10 +28,6 @@ export default function Dashboard() {
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="22" y1="2" x2="11" y2="13" strokeWidth="1.8" strokeLinecap="round"/><polygon points="22 2 15 22 11 13 2 9 22 2" strokeWidth="1.8" strokeLinecap="round"/></svg> },
     { label: 'Failed', value: stats.sent_failed, color: 'red', accent: '#ef4444', bgIcon: 'rgba(239,68,68,0.15)',
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="1.8"/><line x1="15" y1="9" x2="9" y2="15" strokeWidth="1.8" strokeLinecap="round"/><line x1="9" y1="9" x2="15" y2="15" strokeWidth="1.8" strokeLinecap="round"/></svg> },
-    { label: 'Business Leads', value: stats.business_emails, color: 'blue', accent: '#3b82f6', bgIcon: 'rgba(59,130,246,0.15)',
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2" strokeWidth="1.8"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" strokeWidth="1.8" strokeLinecap="round"/></svg> },
-    { label: 'Individual Leads', value: stats.individual_emails, color: 'purple', accent: '#a855f7', bgIcon: 'rgba(168,85,247,0.15)',
-      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="7" r="4" strokeWidth="1.8"/></svg> },
     { label: 'DB Size (KB)', value: stats.buyers_csv_size, color: '', accent: '#f59e0b', bgIcon: 'rgba(245,158,11,0.15)',
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3" strokeWidth="1.8"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" strokeWidth="1.8"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" strokeWidth="1.8"/></svg> },
   ];
@@ -71,7 +66,6 @@ export default function Dashboard() {
           <div className="pipeline">
             {[
               { label: 'Search', done: stats.total_buyers > 0 },
-              { label: 'Classify', done: stats.business_emails + stats.individual_emails > 0 },
               { label: 'Send', done: stats.total_sent > 0 },
               { label: 'Report', done: stats.total_sent > 0 },
             ].map((step, i, arr) => (
@@ -140,7 +134,6 @@ export default function Dashboard() {
         <div className="card-subtitle">Jump to any stage of the pipeline</div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
           <Link href="/upload" className="btn btn-secondary">Upload CSV</Link>
-          <Link href="/classify" className="btn btn-secondary">Run AI Classify</Link>
           <Link href="/send" className="btn btn-primary">Send Campaign</Link>
           <Link href="/report" className="btn btn-secondary">View Report</Link>
           <Link href="/settings" className="btn btn-secondary">Settings</Link>

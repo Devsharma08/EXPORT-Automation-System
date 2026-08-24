@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({})) as { keyword?: string; platforms?: string[]; maxResults?: number };
-  const keyword = (body.keyword ?? 'Singing Bowls').trim();
+  const keyword = (body.keyword ?? 'Crystal Candle Holders').trim();
   const selectedPlatforms = body.platforms ?? ['Google', 'Facebook', 'LinkedIn', 'Directory', 'Website'];
   const maxResults = body.maxResults ?? 20;
 

@@ -70,7 +70,7 @@ export default function SendClient({ settings, attachment, biz_count, ind_count,
           {/* Compose */}
           <div className="card" style={{ gridColumn: '1', gridRow: '1' }}>
             <div className="card-title">Compose Email</div>
-            <div className="card-subtitle">Use {'{name}'} and {'{company}'} as personalization placeholders</div>
+            <div className="card-subtitle">Use the pre-styled B2B HTML layout below or enter a custom HTML/Plaintext template</div>
 
             <div className="form-group">
               <label className="form-label" htmlFor="email-subject">Subject Line</label>
@@ -79,7 +79,7 @@ export default function SendClient({ settings, attachment, biz_count, ind_count,
                 className="form-input"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                placeholder="e.g. Singing Bowls — Product Catalogue"
+                placeholder="e.g. Premium Crystal & Glass Candle Holders — Bulk Export Range"
                 required
               />
             </div>
@@ -91,8 +91,8 @@ export default function SendClient({ settings, attachment, biz_count, ind_count,
                 className="form-textarea"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                style={{ minHeight: 180 }}
-                placeholder="Dear {name},…"
+                style={{ minHeight: 250 }}
+                placeholder="Paste your HTML template here..."
                 required
               />
             </div>
@@ -103,25 +103,9 @@ export default function SendClient({ settings, attachment, biz_count, ind_count,
             {/* Audience */}
             <div className="card">
               <div className="card-title">Target Audience</div>
-              <div className="audience-cards">
-                {audienceOptions.map((opt) => (
-                  <label
-                    key={opt.value}
-                    className={`audience-card${audience === opt.value ? ' selected' : ''}`}
-                    htmlFor={`aud-${opt.value}`}
-                  >
-                    <input
-                      type="radio"
-                      id={`aud-${opt.value}`}
-                      name="audience"
-                      value={opt.value}
-                      checked={audience === opt.value}
-                      onChange={() => setAudience(opt.value)}
-                    />
-                    <span className="audience-count">{opt.count}</span>
-                    <span className="audience-label">{opt.label}</span>
-                  </label>
-                ))}
+              <div style={{ padding: '12px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--primary)' }}>{all_count}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginLeft: 8 }}>Active Discovered Buyers Stored</span>
               </div>
             </div>
 

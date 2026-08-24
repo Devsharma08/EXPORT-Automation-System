@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 export default function DashboardSearchClient() {
   const router = useRouter();
-  const [keyword, setKeyword] = useState('Singing Bowls');
+  const [keyword, setKeyword] = useState('Crystal Candle Holders');
   const [maxResults, setMaxResults] = useState(20);
   const [platforms, setPlatforms] = useState<string[]>(['Google', 'Facebook', 'LinkedIn', 'Directory', 'Website']);
   const [loading, setLoading] = useState(false); // Indicates search is actively running

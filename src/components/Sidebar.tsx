@@ -33,17 +33,6 @@ const NAV_ITEMS = [
         ),
       },
       {
-        href: '/classify',
-        id: 'nav-classify',
-        label: 'AI Classify',
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" strokeWidth="1.8"/>
-            <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
-          </svg>
-        ),
-      },
-      {
         href: '/send',
         id: 'nav-send',
         label: 'Send Campaign',

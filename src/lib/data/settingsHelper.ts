@@ -15,9 +15,9 @@ const DEFAULTS: AppSettings = {
   serper_api_key: SERPER_API_KEY,
   scrapingbee_api_key: SCRAPINGBEE_API_KEY,
   tavily_api_key: TAVILY_API_KEY,
-  default_subject: 'Singing Bowls — Product Catalogue',
+  default_subject: 'Premium Crystal & Glass Candle Holders — Bulk Export Range (23+ SKUs)',
   default_body:
-    'Dear {name},\n\nWe are a premier manufacturer and exporter of authentic Himalayan Singing Bowls. Please find our product catalogue attached.\n\nWe would love to explore a business relationship with you.\n\nBest regards,\nThe Export Team',
+    'Product Zone International manufactures export-grade crystal-cut votives, textured glassware, and statement centerpieces. Please find our catalog attached.',
   send_delay: 2,
   daily_send_limit: 100,
   presentation_path: 'assets/company_presentation.pdf',

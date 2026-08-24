@@ -4,7 +4,7 @@ import Sidebar from '@/components/Sidebar';
 
 export const metadata: Metadata = {
   title: 'EXPORT Automation System',
-  description: 'Automated buyer discovery and Gmail outreach for Singing Bowls exporters.',
+  description: 'Automated buyer discovery and Gmail outreach for Crystal Candle Holders exporters.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
