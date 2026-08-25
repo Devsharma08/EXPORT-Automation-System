@@ -7,6 +7,9 @@ const QUERY_TEMPLATES = [
   '"{keyword}" (importer OR "wholesale buyer" OR distributor OR buyer) ("contact us" OR email)',
   '"{keyword}" wholesale company contact email',
   '"{keyword}" bulk buyer email info',
+  '"{keyword}" importer email "@gmail.com" OR "@yahoo.com" OR "@outlook.com"',
+  '"{keyword}" home decor importer wholesale email address contact',
+  '"{keyword}" glassware candle holder buyer email bulk order',
 ];
 
 const EMAIL_PATTERN = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
@@ -117,15 +120,18 @@ export async function search(
       // Quick snippet check
       const snippetEmails = extractEmailsFromText(r.snippet);
       if (snippetEmails.length) {
-        allRecords.push({
-          buyer_name: r.title,
-          company_name: r.title,
-          email: snippetEmails[0],
-          website: r.url,
-          country: '',
-          source_platform: 'Google',
-          discovered_at: new Date().toISOString(),
-        });
+        for (const email of snippetEmails) {
+          if (allRecords.length >= maxResults) break;
+          allRecords.push({
+            buyer_name: r.title,
+            company_name: r.title,
+            email,
+            website: r.url,
+            country: '',
+            source_platform: 'Google',
+            discovered_at: new Date().toISOString(),
+          });
+        }
         continue;
       }
 

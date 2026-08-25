@@ -9,6 +9,9 @@ const WEBSITE_QUERIES = [
   '"{keyword}" importer wholesale "contact us" email',
   '"{keyword}" import company "info@" OR "sales@"',
   '"{keyword}" distributor "email us" contact',
+  '"{keyword}" wholesale buyer "@gmail.com" OR "@yahoo.com" contact',
+  '"{keyword}" home decor buyer importer email address website',
+  '"{keyword}" glassware candle holder bulk importer contact email',
 ];
 
 function isBlocked(url: string): boolean {
@@ -94,11 +97,12 @@ export async function search(
 
       // Otherwise visit site contact pages
       const p = visitContactPage(href).then((emails) => {
-        if (emails.length) {
+        for (const email of emails) {
+          if (results.length >= maxResults) break;
           results.push({
             buyer_name: title,
             company_name: title,
-            email: emails[0],
+            email,
             website: href,
             country: '',
             source_platform: 'Website',

@@ -66,6 +66,7 @@ export default function Dashboard() {
           <div className="pipeline">
             {[
               { label: 'Search', done: stats.total_buyers > 0 },
+              { label: 'Validate', done: stats.total_buyers > 0 },
               { label: 'Send', done: stats.total_sent > 0 },
               { label: 'Report', done: stats.total_sent > 0 },
             ].map((step, i, arr) => (
@@ -134,6 +135,7 @@ export default function Dashboard() {
         <div className="card-subtitle">Jump to any stage of the pipeline</div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
           <Link href="/upload" className="btn btn-secondary">Upload CSV</Link>
+          <Link href="/validate" className="btn btn-secondary">Validate Emails</Link>
           <Link href="/send" className="btn btn-primary">Send Campaign</Link>
           <Link href="/report" className="btn btn-secondary">View Report</Link>
           <Link href="/settings" className="btn btn-secondary">Settings</Link>

@@ -6,9 +6,13 @@ import { unobfuscateEmailText, decodeHtmlEntities, decodeCloudflareEmail } from 
 const EMAIL_PATTERN = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
 
 const DIRECTORY_QUERIES = [
-  '"{keyword}" importer directory ("@gmail.com" OR "@yahoo.com" OR "email")',
+  '"{keyword}" importer directory ("@gmail.com" OR "@yahoo.com" OR email)',
   '"{keyword}" buyer directory (site:kompass.com OR site:exporthub.com OR site:thomasnet.com OR site:europages.com)',
-  '"{keyword}" B2B buyer trade directory contact',
+  '"{keyword}" B2B buyer trade directory contact email',
+  '"{keyword}" importer wholesaler email contact site:indiamart.com OR site:alibaba.com OR site:tradekey.com',
+  '"{keyword}" home decor buyer wholesale email directory site:globalsources.com OR site:made-in-china.com',
+  '"{keyword}" gift shop wholesale buyer contact email address',
+  '"{keyword}" crystal glassware buyer importer email trade directory',
 ];
 
 export async function search(
@@ -44,17 +48,22 @@ export async function search(
         }
       }
 
-      if (emails.length && href && !seenEmails.has(emails[0])) {
-        seenEmails.add(emails[0]);
-        results.push({
-          buyer_name: title.split('-')[0]?.trim() || title,
-          company_name: title,
-          email: emails[0],
-          website: href,
-          country: '',
-          source_platform: 'Directory',
-          discovered_at: new Date().toISOString(),
-        });
+      if (emails.length && href) {
+        for (const email of emails) {
+          if (!seenEmails.has(email)) {
+            seenEmails.add(email);
+            results.push({
+              buyer_name: title.split('-')[0]?.trim() || title,
+              company_name: title,
+              email,
+              website: href,
+              country: '',
+              source_platform: 'Directory',
+              discovered_at: new Date().toISOString(),
+            });
+          }
+          if (results.length >= maxResults) break;
+        }
       }
     }
     if (results.length >= maxResults) break;

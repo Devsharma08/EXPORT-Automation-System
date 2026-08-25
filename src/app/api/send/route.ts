@@ -44,7 +44,17 @@ export async function POST(request: NextRequest) {
 
     // Get recipients directly from discovered buyers (bypassing AI classification)
     const buyers = readBuyers();
-    const audienceEmails = buyers.map((r) => r.email).filter(Boolean);
+    // First: deduplicate within buyer list itself (case-insensitive) before sent-log cross-check
+    const seenRaw = new Set<string>();
+    const audienceEmails = buyers
+      .map((r) => r.email)
+      .filter((e): e is string => !!e)
+      .filter((e) => {
+        const low = e.toLowerCase();
+        if (seenRaw.has(low)) return false;
+        seenRaw.add(low);
+        return true;
+      });
 
     if (!audienceEmails.length) {
       return NextResponse.json({
