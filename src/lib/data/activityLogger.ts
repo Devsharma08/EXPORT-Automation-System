@@ -76,6 +76,49 @@ export function readBuyers(): BuyerRecord[] {
   return readCsv<BuyerRecord>(BUYERS_CSV, BUYERS_COLUMNS);
 }
 
+export function readBuyersWithStatus(): BuyerRecord[] {
+  const buyers = readBuyers();
+  const sentLog = readSentLog();
+  const sentMap = new Map<string, string>();
+  for (const s of sentLog) {
+    if (s.email && s.status === 'sent') {
+      sentMap.set(s.email.toLowerCase().trim(), s.timestamp);
+    }
+  }
+
+  return buyers.map((b) => {
+    const low = (b.email ?? '').toLowerCase().trim();
+    const isSent = sentMap.has(low);
+    return {
+      ...b,
+      is_sent: isSent,
+      last_sent_at: isSent ? sentMap.get(low) : undefined,
+    };
+  });
+}
+
+export function deleteBuyer(email: string): boolean {
+  try {
+    const buyers = readBuyers();
+    const low = email.toLowerCase().trim();
+    const filtered = buyers.filter((b) => (b.email ?? '').toLowerCase().trim() !== low);
+    if (filtered.length === buyers.length) return false;
+
+    const rows = filtered.map((r) => {
+      const row: Record<string, string> = {};
+      for (const col of BUYERS_COLUMNS) {
+        row[col] = (r as unknown as Record<string, string | undefined>)[col] ?? '';
+      }
+      return row;
+    });
+    const csv = stringify(rows, { header: true, columns: [...BUYERS_COLUMNS] });
+    fs.writeFileSync(BUYERS_CSV, csv, 'utf-8');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function appendBuyers(records: Partial<BuyerRecord>[]): number {
   if (!records.length) return 0;
   ensureFile(BUYERS_CSV, BUYERS_COLUMNS);

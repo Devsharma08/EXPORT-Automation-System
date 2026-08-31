@@ -23,12 +23,16 @@ export async function POST(request: NextRequest) {
       body?: string;
       audience?: string;
       use_attachment?: boolean;
+      force_resend?: boolean;
+      selected_emails?: string[];
     };
 
     const subject = (body.subject ?? '').trim();
     const emailBody = (body.body ?? '').trim();
     const audience = (body.audience ?? 'all') as 'business' | 'individual' | 'all';
     const useAttachment = body.use_attachment ?? false;
+    const forceResend = body.force_resend ?? false;
+    const selectedEmails = body.selected_emails ? new Set(body.selected_emails.map((e) => e.toLowerCase().trim())) : null;
 
     if (!subject || !emailBody) {
       return NextResponse.json({ error: 'Subject and body are required.' }, { status: 400 });
@@ -39,49 +43,59 @@ export async function POST(request: NextRequest) {
     const gmailPassword = settings.app_password;
 
     if (!gmailEmail || !gmailPassword) {
-      return NextResponse.json({ error: 'Gmail credentials not configured.' }, { status: 400 });
+      return NextResponse.json({ error: 'Gmail credentials not configured. Check Settings.' }, { status: 400 });
     }
 
-    // Get recipients directly from discovered buyers (bypassing AI classification)
+    // Get recipients directly from discovered buyers
     const buyers = readBuyers();
-    // First: deduplicate within buyer list itself (case-insensitive) before sent-log cross-check
     const seenRaw = new Set<string>();
-    const audienceEmails = buyers
+    let targetEmails = buyers
       .map((r) => r.email)
       .filter((e): e is string => !!e)
       .filter((e) => {
-        const low = e.toLowerCase();
+        const low = e.toLowerCase().trim();
         if (seenRaw.has(low)) return false;
         seenRaw.add(low);
         return true;
       });
 
-    if (!audienceEmails.length) {
+    // If specific emails were selected, narrow to them
+    if (selectedEmails && selectedEmails.size > 0) {
+      targetEmails = targetEmails.filter((e) => selectedEmails.has(e.toLowerCase().trim()));
+    }
+
+    if (!targetEmails.length) {
       return NextResponse.json({
-        error: 'No discovered buyer emails found in database.',
+        error: 'No discovered buyer emails found matching criteria in database.',
       }, { status: 400 });
     }
 
-    // Filter already-sent emails to keep a clean record and avoid duplicates
+    // Filter already-sent emails if safe mode (forceResend is false)
     const sentEmails = getSentEmails();
-    const newEmails = audienceEmails.filter(email => !sentEmails.has(email.toLowerCase()));
+    const finalEmails = forceResend
+      ? targetEmails
+      : targetEmails.filter((email) => !sentEmails.has(email.toLowerCase().trim()));
 
-    if (!newEmails.length) {
+    if (!finalEmails.length) {
       return NextResponse.json({
-        error: 'All discovered buyers have already been sent outreach emails.',
+        error: 'All selected buyer emails have already been contacted. Enable "Force Re-send" if you wish to contact them again.',
       }, { status: 400 });
     }
 
     // Enrich with buyer data
-    const buyersMap = Object.fromEntries(
-      readBuyers().map((r) => [r.email?.toLowerCase(), r])
-    );
-    const recipients = newEmails.map((email) => {
-      const buyer = buyersMap[email] ?? {};
+    const buyersMap = new Map<string, typeof buyers[0]>();
+    for (const b of buyers) {
+      if (b.email) {
+        buyersMap.set(b.email.toLowerCase().trim(), b);
+      }
+    }
+
+    const recipients = finalEmails.map((email) => {
+      const buyer = buyersMap.get(email.toLowerCase().trim());
       return {
-        email,
-        buyer_name: buyer.buyer_name ?? '',
-        company_name: buyer.company_name ?? '',
+        email: email.toLowerCase().trim(),
+        buyer_name: buyer?.buyer_name ?? '',
+        company_name: buyer?.company_name ?? '',
       };
     });
 
@@ -101,8 +115,11 @@ export async function POST(request: NextRequest) {
     _latestReport = { ...reportData, subject, total_recipients: reportData.total } as Record<string, unknown>;
 
     const fullReport = buildRunReport(_latestReport as never);
+    const skippedCount = targetEmails.length - finalEmails.length;
+    const skipMsg = skippedCount > 0 ? ` (${skippedCount} already-contacted leads skipped)` : '';
+
     return NextResponse.json({
-      message: `Campaign complete! ${reportData.success_count} sent, ${reportData.failed_count} failed.`,
+      message: `Campaign complete! ${reportData.success_count} sent, ${reportData.failed_count} failed${skipMsg}.`,
       report: fullReport,
     });
   } catch (err) {

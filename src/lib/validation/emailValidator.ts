@@ -40,20 +40,27 @@ function isPlaceholder(email: string): boolean {
 }
 
 function isAssetFalsePositive(email: string): boolean {
-  const local = email.split('@')[0].toLowerCase();
-  const domain = email.split('@')[1]?.toLowerCase() ?? '';
-  const localExt = local.split('.').pop() ?? '';
-  const domainExt = domain.split('.').pop() ?? '';
+  const parts = email.toLowerCase().split('@');
+  if (parts.length !== 2) return true;
+  const [local, domain] = parts;
 
-  if (ASSET_EXTENSIONS.has(localExt) || ASSET_EXTENSIONS.has(domainExt)) {
-    // Exception for pdf if domain is legitimate email provider, but otherwise flag asset strings
-    if (ASSET_EXTENSIONS.has(localExt) && localExt !== 'pdf') return true;
+  const localExt = local.split('.').pop() ?? '';
+  if (ASSET_EXTENSIONS.has(localExt) && localExt !== 'pdf') return true;
+
+  const domainParts = domain.split('.');
+  const domainExt = domainParts.pop() ?? '';
+  if (ASSET_EXTENSIONS.has(domainExt)) return true;
+
+  if (domainParts.some((p) => p.startsWith('2x') || p.startsWith('3x') || p.includes('graphic') || p.includes('icon') || p.includes('modal'))) {
+    return true;
   }
+
   return false;
 }
 
 function isDomainTooLong(email: string): boolean {
-  return (email.split('@').pop()?.length ?? 0) > 50;
+  const domain = email.split('@').pop() ?? '';
+  return domain.length > 50 || !domain.includes('.');
 }
 
 export function validateEmail(email: string): { valid: boolean; reason: string } {

@@ -23,7 +23,7 @@ const NAV_ITEMS = [
       {
         href: '/upload',
         id: 'nav-upload',
-        label: 'Upload Leads',
+        label: 'Leads & Upload',
         icon: (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>

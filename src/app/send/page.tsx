@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { loadSettings } from '@/lib/data/settingsHelper';
 import { getAttachmentInfo } from '@/lib/outreach/attachmentHandler';
-import { readClassifiedEmails } from '@/lib/data/activityLogger';
+import { readClassifiedEmails, readBuyersWithStatus } from '@/lib/data/activityLogger';
 import SendClient from '@/components/SendClient';
 
 export const dynamic = 'force-dynamic';
-
 
 export const metadata: Metadata = { title: 'Send Campaign — EXPORT Automation System' };
 
@@ -15,6 +14,7 @@ export default function SendPage() {
   const bizCount = readClassifiedEmails('business').length;
   const indCount = readClassifiedEmails('individual').length;
   const allCount = readClassifiedEmails('all').length;
+  const buyers = readBuyersWithStatus().reverse();
 
   return (
     <SendClient
@@ -23,6 +23,7 @@ export default function SendPage() {
       biz_count={bizCount}
       ind_count={indCount}
       all_count={allCount}
+      buyers={buyers}
     />
   );
 }

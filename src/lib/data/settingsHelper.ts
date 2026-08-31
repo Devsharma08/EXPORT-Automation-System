@@ -46,6 +46,9 @@ export function loadSettings(): AppSettings {
       if (loaded.serper_api_key) process.env.SERPER_API_KEY = loaded.serper_api_key;
       if (loaded.scrapingbee_api_key) process.env.SCRAPINGBEE_API_KEY = loaded.scrapingbee_api_key;
       if (loaded.tavily_api_key) process.env.TAVILY_API_KEY = loaded.tavily_api_key;
+      if (loaded.email) process.env.GMAIL_EMAIL = loaded.email;
+      if (loaded.app_password) process.env.GMAIL_APP_PASSWORD = loaded.app_password;
+      if (loaded.cc_email) process.env.CC_EMAIL = loaded.cc_email;
 
       return loaded;
     }
@@ -66,6 +69,9 @@ export function saveSettings(data: Partial<AppSettings>): boolean {
     if (merged.serper_api_key !== undefined) process.env.SERPER_API_KEY = merged.serper_api_key;
     if (merged.scrapingbee_api_key !== undefined) process.env.SCRAPINGBEE_API_KEY = merged.scrapingbee_api_key;
     if (merged.tavily_api_key !== undefined) process.env.TAVILY_API_KEY = merged.tavily_api_key;
+    if (merged.email !== undefined) process.env.GMAIL_EMAIL = merged.email;
+    if (merged.app_password !== undefined) process.env.GMAIL_APP_PASSWORD = merged.app_password;
+    if (merged.cc_email !== undefined) process.env.CC_EMAIL = merged.cc_email;
 
     return true;
   } catch {

@@ -8,6 +8,8 @@ export interface BuyerRecord {
   country: string;
   source_platform: string;
   discovered_at: string;
+  is_sent?: boolean;
+  last_sent_at?: string;
 }
 
 export interface SentLogRecord {
