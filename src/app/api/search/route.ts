@@ -3,6 +3,7 @@ import { appendBuyers, clearBuyers } from '@/lib/data/activityLogger';
 import { extract } from '@/lib/extraction/dataExtractor';
 import { validateRecords } from '@/lib/validation/emailValidator';
 import { loadSettings } from '@/lib/data/settingsHelper';
+import { SEARCH_CITIES } from '@/lib/config';
 
 // In-memory search state
 export let searchRunning = false;
@@ -53,14 +54,19 @@ export async function POST(request: NextRequest) {
 
     const allRaw: unknown[] = [];
     for (const [name, adapter] of adapters) {
-      try {
-        searchLog.push(`🔍 Searching ${name} for "${keyword}"...`);
-        const records = await adapter(keyword, maxResults);
-        allRaw.push(...records);
-        searchLog.push(`✓ ${name}: Discovered ${records.length} potential buyer records`);
-      } catch (err) {
-        searchLog.push(`✗ ${name}: ${String(err)}`);
+      const cityLimit = Math.max(1, Math.ceil(maxResults / SEARCH_CITIES.length));
+      const sourceRecords: unknown[] = [];
+      for (const city of SEARCH_CITIES) {
+        try {
+          searchLog.push(`🔍 Searching ${name} for "${keyword}" in ${city}...`);
+          const records = await adapter(`${keyword} in "${city}"`, cityLimit);
+          sourceRecords.push(...records.slice(0, maxResults - sourceRecords.length));
+        } catch (err) {
+          searchLog.push(`✗ ${name} (${city}): ${String(err)}`);
+        }
       }
+      allRaw.push(...sourceRecords);
+      searchLog.push(`✓ ${name}: Discovered ${sourceRecords.length} potential buyer records`);
     }
 
     const normalized = extract(allRaw as never[]);

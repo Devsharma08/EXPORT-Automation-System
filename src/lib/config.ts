@@ -12,6 +12,7 @@ const ASSETS_DIR = path.join(BASE_DIR, 'assets');
 // ── Search Settings ────────────────────────────────────────────────────────────
 export const SEARCH_KEYWORD = process.env.SEARCH_KEYWORD ?? 'Crystal Candle Holders';
 export const MAX_RESULTS_PER_SOURCE = parseInt(process.env.MAX_RESULTS_PER_SOURCE ?? '20', 10);
+export const SEARCH_CITIES = ['Corpus Christi', 'Plano', 'Lubbock', 'Laredo', 'Irving'] as const;
 
 export const ENABLED_SOURCES: Record<string, boolean> = {
   google: true,

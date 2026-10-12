@@ -9,6 +9,7 @@ A full-stack **Next.js (TypeScript)** pipeline for automated buyer discovery and
 | Feature | Details |
 |---|---|
 | Multi-source discovery | Google, Facebook, LinkedIn, Directories, Company Websites |
+| Search locations | Corpus Christi, Plano, Lubbock, Laredo, and Irving |
 | AI Classification | Gemini API — business vs individual segmentation |
 | Gmail Outreach | nodemailer SMTP SSL, auto-reconnect, duplicate prevention |
 | Web Dashboard | 6-page Next.js UI with premium dark design |
